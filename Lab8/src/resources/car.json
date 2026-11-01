@@ -1,0 +1,9 @@
+{
+  "id" : 1,
+  "brand" : "Volkswagen",
+  "model" : "Golf GTI",
+  "year" : 2019,
+  "price" : 2850000,
+  "vin" : "WVWXXXXX000000001",
+  "manufactureDate" : "2019-03-14"
+}

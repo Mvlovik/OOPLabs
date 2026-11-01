@@ -13,7 +13,6 @@ public class Main {
     static final Map<String, Integer> errors = new LinkedHashMap<>();
     static final Set<String> vins = new HashSet<>();
 
-    // Разбиение строки с учётом кавычек и "" (кастомный парсер из конспекта)
     static List<String> parseCsvLine(String line) {
         List<String> result = new ArrayList<>();
         StringBuilder field = new StringBuilder();

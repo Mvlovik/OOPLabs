@@ -1,0 +1,97 @@
+[ {
+  "id" : 1,
+  "brand" : "Volkswagen",
+  "model" : "Golf GTI",
+  "year" : 2019,
+  "price" : 2850000,
+  "vin" : "WVWXXXXX000000001",
+  "manufactureDate" : "2019-03-14"
+}, {
+  "id" : 2,
+  "brand" : "Volkswagen",
+  "model" : "Polo",
+  "year" : 2021,
+  "price" : 1650000,
+  "vin" : "WVWXXXXX000000002",
+  "manufactureDate" : "2021-05-20"
+}, {
+  "id" : 3,
+  "brand" : "BMW",
+  "model" : "X5 xDrive40i",
+  "year" : 2021,
+  "price" : 7200000,
+  "vin" : "WBAXXXXX000000006",
+  "manufactureDate" : "2021-01-11"
+}, {
+  "id" : 4,
+  "brand" : "Toyota",
+  "model" : "Camry",
+  "year" : 2022,
+  "price" : 3300000,
+  "vin" : "JTDXXXXX000000008",
+  "manufactureDate" : "2022-07-04"
+}, {
+  "id" : 5,
+  "brand" : "Toyota",
+  "model" : "Land Cruiser 300",
+  "year" : 2024,
+  "price" : 9800000,
+  "vin" : "JTDXXXXX000000011",
+  "manufactureDate" : "2024-02-26"
+}, {
+  "id" : 6,
+  "brand" : "Honda",
+  "model" : "CR-V",
+  "year" : 2022,
+  "price" : 3500000,
+  "vin" : "1HGXXXXX000000014",
+  "manufactureDate" : "2022-09-09"
+}, {
+  "id" : 7,
+  "brand" : "Kia",
+  "model" : "Sportage",
+  "year" : 2023,
+  "price" : 3200000,
+  "vin" : "KNAXXXXX000000016",
+  "manufactureDate" : "2023-04-18"
+}, {
+  "id" : 8,
+  "brand" : "Skoda",
+  "model" : "Octavia",
+  "year" : 2021,
+  "price" : 2300000,
+  "vin" : "TMBXXXXX000000018",
+  "manufactureDate" : "2021-11-02"
+}, {
+  "id" : 9,
+  "brand" : "Mercedes-Benz",
+  "model" : "C-Class C200",
+  "year" : 2020,
+  "price" : 4200000,
+  "vin" : "WDDXXXXX000000021",
+  "manufactureDate" : "2020-06-30"
+}, {
+  "id" : 10,
+  "brand" : "Ford",
+  "model" : "Mustang GT",
+  "year" : 1969,
+  "price" : 5500000,
+  "vin" : "1FAXXXXX000000024",
+  "manufactureDate" : "1969-08-15"
+}, {
+  "id" : 11,
+  "brand" : "Tesla",
+  "model" : "Model Y",
+  "year" : 2024,
+  "price" : 5600000,
+  "vin" : "5YJXXXXX000000031",
+  "manufactureDate" : "2024-05-07"
+}, {
+  "id" : 12,
+  "brand" : "Ferrari",
+  "model" : "250 GTO",
+  "year" : 1962,
+  "price" : 50000000,
+  "vin" : "ZFFXXXXX000000032",
+  "manufactureDate" : "1962-01-01"
+} ]
