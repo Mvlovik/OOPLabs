@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" inherit-compiler-output="true">
+    <exclude-output />
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
+      <excludeFolder url="file://$MODULE_DIR$/out" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/jackson-annotations-2.16.1.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/jackson-core-2.16.1.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/jackson-databind-2.16.1.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/jackson-dataformat-xml-2.16.1.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/jackson-datatype-jsr310-2.16.1.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/jackson-module-jaxb-annotations-2.16.1.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/jakarta.activation-api-2.1.2.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/jakarta.xml.bind-api-4.0.1.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/stax2-api-4.2.1.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/woodstox-core-6.5.1.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+  </component>
+</module>
