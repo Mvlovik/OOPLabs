@@ -14,153 +14,95 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class Main {
     static final int THREADS = 4;
-    static final long TIMEOUT_SECONDS = 30;
-    static final Path BASE_DIR = Files.isDirectory(Path.of("data")) ? Path.of("").toAbsolutePath()
-            : Files.isDirectory(Path.of("Lab10/data")) ? Path.of("Lab10").toAbsolutePath()
-            : Path.of("").toAbsolutePath().resolve("..").normalize();
-    static final Path DATA_DIR = BASE_DIR.resolve("data");
-
-    record LoadResult(String fileName, List<Car> cars, long millis, String thread) {}
-    record LoadSummary(List<Car> cars, long millis) {}
+    static final long TIMEOUT = 30;
+    static final Path DATA = Path.of("data");
+    static final Path DIR = Files.isDirectory(DATA) ? DATA : Path.of("Lab10/data");
 
     public static void main(String[] args) throws Exception {
-        List<Path> files = findFiles();
-        if (files.isEmpty()) {
-            System.err.println("CSV файлы не найдены в " + DATA_DIR);
-            return;
+        List<Path> files;
+        try (var stream = Files.list(DIR)) {
+            files = stream.filter(p -> p.toString().endsWith(".csv")).sorted().toList();
         }
-        System.out.println("Файлов: " + files.size());
 
-        LoadSummary sequential = loadSequential(files);
-        LoadSummary parallel = loadParallel(files);
+        System.out.println("=== Последовательная загрузка ===");
+        long start = System.nanoTime();
+        List<Car> all = new ArrayList<>();
+        for (Path file : files) {
+            all.addAll(load(file));
+        }
+        long seq = (System.nanoTime() - start) / 1_000_000;
+        System.out.println("Всего автомобилей: " + all.size());
+        System.out.println("Время: " + seq + " мс");
 
-        List<Car> unique = deduplicate(parallel.cars());
+        System.out.println();
+        System.out.println("=== Параллельная загрузка (пул из " + THREADS + " потоков) ===");
+        ExecutorService pool = Executors.newFixedThreadPool(THREADS);
+        start = System.nanoTime();
+        List<Car> parallel = new ArrayList<>();
+        List<Future<List<Car>>> futures = new ArrayList<>();
+        for (Path file : files) {
+            futures.add(pool.submit(() -> {
+                List<Car> cars = load(file);
+                System.out.println(file.getFileName() + ": " + cars.size()
+                        + " автомобилей (" + Thread.currentThread().getName() + ")");
+                return cars;
+            }));
+        }
+        for (Future<List<Car>> future : futures) {
+            try {
+                parallel.addAll(future.get(TIMEOUT, TimeUnit.SECONDS));
+            } catch (TimeoutException e) {
+                future.cancel(true);
+                System.err.println("Таймаут загрузки, задача отменена");
+            } catch (ExecutionException e) {
+                System.err.println("Ошибка загрузки: " + e.getCause().getMessage());
+            }
+        }
+        pool.shutdown();
+        pool.awaitTermination(TIMEOUT, TimeUnit.SECONDS);
+        long par = (System.nanoTime() - start) / 1_000_000;
+        System.out.println("Всего автомобилей: " + parallel.size());
+        System.out.println("Время: " + par + " мс");
+
+        Map<Integer, Car> unique = new LinkedHashMap<>();
+        for (Car car : parallel) {
+            unique.putIfAbsent(car.getId(), car);
+        }
         System.out.println("После удаления дубликатов: " + unique.size());
 
-        printGroups(unique);
+        System.out.println();
+        System.out.println("=== Группировка по бренду ===");
+        unique.values().stream()
+                .collect(Collectors.groupingBy(Car::getBrand, TreeMap::new, Collectors.counting()))
+                .forEach((brand, count) -> System.out.println(brand + ": " + count));
 
         System.out.println();
         System.out.println("=== Сравнение ===");
-        System.out.printf("Ускорение: %.2fx%n", sequential.millis() / (double) parallel.millis());
+        System.out.printf("Ускорение: %.2fx%n", seq / (double) par);
     }
 
-    static List<Path> findFiles() throws IOException {
-        try (var stream = Files.list(DATA_DIR)) {
-            return stream
-                    .filter(p -> p.getFileName().toString().toLowerCase().endsWith(".csv"))
-                    .sorted()
-                    .toList();
-        }
-    }
-
-    static LoadSummary loadSequential(List<Path> files) throws IOException {
-        System.out.println();
-        System.out.println("=== Последовательная загрузка ===");
-        List<Car> all = new ArrayList<>();
-        long start = System.nanoTime();
-        for (Path file : files) {
-            long t0 = System.nanoTime();
-            List<Car> cars = readCars(file);
-            long millis = (System.nanoTime() - t0) / 1_000_000;
-            all.addAll(cars);
-            System.out.printf("%s: %d автомобилей, %d мс%n", file.getFileName(), cars.size(), millis);
-        }
-        long total = (System.nanoTime() - start) / 1_000_000;
-        System.out.println("Всего автомобилей: " + all.size());
-        System.out.println("Время: " + total + " мс");
-        return new LoadSummary(all, total);
-    }
-
-    static LoadSummary loadParallel(List<Path> files) throws InterruptedException {
-        System.out.println();
-        System.out.println("=== Параллельная загрузка (пул из " + THREADS + " потоков) ===");
-        AtomicInteger counter = new AtomicInteger();
-        ExecutorService executor = Executors.newFixedThreadPool(THREADS, r -> {
-            Thread thread = new Thread(r, "поток-" + counter.incrementAndGet());
-            return thread;
-        });
-
-        List<Future<LoadResult>> futures = new ArrayList<>();
-        List<Car> all = new ArrayList<>();
-        long start = System.nanoTime();
-        try {
-            for (Path file : files) {
-                futures.add(executor.submit(() -> {
-                    long t0 = System.nanoTime();
-                    List<Car> cars = readCars(file);
-                    long millis = (System.nanoTime() - t0) / 1_000_000;
-                    return new LoadResult(file.getFileName().toString(), cars, millis, Thread.currentThread().getName());
-                }));
-            }
-
-            for (int i = 0; i < futures.size(); i++) {
-                Future<LoadResult> future = futures.get(i);
-                String fileName = files.get(i).getFileName().toString();
-                try {
-                    LoadResult result = future.get(TIMEOUT_SECONDS, TimeUnit.SECONDS);
-                    all.addAll(result.cars());
-                    System.out.printf("%s: %d автомобилей, %d мс (%s)%n",
-                            result.fileName(), result.cars().size(), result.millis(), result.thread());
-                } catch (TimeoutException e) {
-                    future.cancel(true);
-                    System.err.printf("Файл %s не загружен за %d секунд, задача отменена%n", fileName, TIMEOUT_SECONDS);
-                } catch (ExecutionException e) {
-                    System.err.printf("Ошибка загрузки %s: %s%n", fileName, e.getCause().getMessage());
-                }
-            }
-        } finally {
-            executor.shutdown();
-            if (!executor.awaitTermination(TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
-                executor.shutdownNow();
-            }
-        }
-
-        long total = (System.nanoTime() - start) / 1_000_000;
-        System.out.println("Всего автомобилей: " + all.size());
-        System.out.println("Время: " + total + " мс");
-        return new LoadSummary(all, total);
-    }
-
-    static List<Car> readCars(Path file) throws IOException {
+    static List<Car> load(Path file) throws IOException {
         List<Car> cars = new ArrayList<>();
         try (BufferedReader reader = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
-            String line = reader.readLine();
-            if (line == null) return cars;
+            reader.readLine();
+            String line;
             while ((line = reader.readLine()) != null) {
                 if (line.isBlank()) continue;
                 String[] parts = line.split(",");
-                if (parts.length < 6) continue;
                 cars.add(new Car(
-                        Integer.parseInt(parts[0].trim()),
-                        parts[1].trim(),
-                        parts[2].trim(),
-                        Integer.parseInt(parts[3].trim()),
-                        Long.parseLong(parts[4].trim()),
-                        parts[5].trim()
+                        Integer.parseInt(parts[0]),
+                        parts[1],
+                        parts[2],
+                        Integer.parseInt(parts[3]),
+                        Long.parseLong(parts[4]),
+                        parts[5]
                 ));
             }
         }
         return cars;
-    }
-
-    static List<Car> deduplicate(List<Car> cars) {
-        Map<Integer, Car> unique = new LinkedHashMap<>();
-        for (Car car : cars) {
-            unique.putIfAbsent(car.getId(), car);
-        }
-        return new ArrayList<>(unique.values());
-    }
-
-    static void printGroups(List<Car> cars) {
-        Map<String, Long> groups = cars.stream()
-                .collect(Collectors.groupingBy(Car::getBrand, TreeMap::new, Collectors.counting()));
-        System.out.println();
-        System.out.println("=== Группировка по бренду ===");
-        groups.forEach((brand, count) -> System.out.printf("%-12s %d%n", brand, count));
     }
 }
