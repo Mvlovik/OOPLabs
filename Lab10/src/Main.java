@@ -39,7 +39,7 @@ public class Main {
         System.out.println("Время: " + seq + " мс");
 
         System.out.println();
-        System.out.println("=== Параллельная загрузка (пул из " + THREADS + " потоков) ===");
+        System.out.println("Параллельная загрузка (" + THREADS + ")");
         ExecutorService pool = Executors.newFixedThreadPool(THREADS);
         start = System.nanoTime();
         List<Car> parallel = new ArrayList<>();
@@ -57,7 +57,7 @@ public class Main {
                 parallel.addAll(future.get(TIMEOUT, TimeUnit.SECONDS));
             } catch (TimeoutException e) {
                 future.cancel(true);
-                System.err.println("Таймаут загрузки, задача отменена");
+                System.err.println("Таймаут");
             } catch (ExecutionException e) {
                 System.err.println("Ошибка загрузки: " + e.getCause().getMessage());
             }
@@ -65,7 +65,7 @@ public class Main {
         pool.shutdown();
         pool.awaitTermination(TIMEOUT, TimeUnit.SECONDS);
         long par = (System.nanoTime() - start) / 1_000_000;
-        System.out.println("Всего автомобилей: " + parallel.size());
+        System.out.println("Колво автомобилей: " + parallel.size());
         System.out.println("Время: " + par + " мс");
 
         Map<Integer, Car> unique = new LinkedHashMap<>();
@@ -75,13 +75,13 @@ public class Main {
         System.out.println("После удаления дубликатов: " + unique.size());
 
         System.out.println();
-        System.out.println("=== Группировка по бренду ===");
+        System.out.println(".ю.ю.ю..По бренду.ю.юю.ю");
         unique.values().stream()
                 .collect(Collectors.groupingBy(Car::getBrand, TreeMap::new, Collectors.counting()))
                 .forEach((brand, count) -> System.out.println(brand + ": " + count));
 
         System.out.println();
-        System.out.println("=== Сравнение ===");
+        System.out.println("Сравнение");
         System.out.printf("Ускорение: %.2fx%n", seq / (double) par);
     }
 

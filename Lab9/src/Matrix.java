@@ -43,6 +43,8 @@ public class Matrix {
         int n = rows();
         int parts = Math.min(threads, n);
         Thread[] ts = new Thread[parts];
+
+
         for (int t = 0; t < parts; t++) {
             final int from = t * n / parts;
             final int to = (t + 1) * n / parts;
